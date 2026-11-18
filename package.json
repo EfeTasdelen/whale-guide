@@ -1,0 +1,17 @@
+{
+  "name": "whale-guide",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Whale Guide: static site, no build step. npm start serves it on http://localhost:5500",
+  "scripts": {
+    "start": "npx --yes http-server -p 5500 -c-1 -o",
+    "data": "python tools/copy_data.py",
+    "ranges": "node tools/build_ranges.js"
+  },
+  "devDependencies": {
+    "http-server": "14.1.1",
+    "polygon-clipping": "0.15.7",
+    "topojson-client": "3.1.0",
+    "world-atlas": "2.0.2"
+  }
+}

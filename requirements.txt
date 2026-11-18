@@ -1,0 +1,5 @@
+# Whale Guide has no Python package dependencies.
+# Python (3.8 or newer) is only used for two optional things, both with the standard library:
+#   - start.bat runs:  python -m http.server 5500
+#   - tools/copy_data.py copies data/whales.json into js/data.js
+# So "pip install -r requirements.txt" installs nothing, and that is expected.

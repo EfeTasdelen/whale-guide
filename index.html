@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Whale Guide</title>
+  <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+  <meta name="description" content="Twelve whales and dolphins: how they live, how deep they dive, and where and when you can see them.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <a class="skip" href="#species">Skip to content</a>
+
+  <header class="site-header">
+    <a class="logo" href="#surface" aria-label="Whale Guide, back to top">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="logo-depth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd35c"/><stop offset=".5" stop-color="#c3a6ff"/><stop offset="1" stop-color="#4ff0ff"/></linearGradient></defs><path d="M29.5 46 L29 36 C24 31 14 28 4 29 C7 20 19 13 28.5 21 L32 25 L35.5 21 C45 13 57 20 60 29 C50 28 40 31 35 36 L34.5 46 Z" fill="url(#logo-depth)"/><path d="M4 52 q7 -5 14 0 t14 0 t14 0 t14 0" fill="none" stroke="#4ff0ff" stroke-width="3.2" stroke-linecap="round"/></svg>
+      <span>Whale Guide</span>
+    </a>
+    <nav class="menu" aria-label="Sections">
+      <a href="#species">Species</a>
+      <a href="#map">Map</a>
+      <a href="#conservation">Conservation</a>
+    </nav>
+    <button class="chat-toggle" id="chat-toggle" type="button" aria-controls="chat" aria-expanded="false">
+      <span class="pulse" aria-hidden="true"></span> Ask the Guide
+    </button>
+  </header>
+
+  <!-- Depth gauge on the left -->
+  <aside class="depth-gauge" aria-hidden="true">
+    <div class="dg-line">
+      <span style="top:0%">0 m</span>
+      <span style="top:33%">200 m</span>
+      <span style="top:66%">1,000 m</span>
+      <span style="top:100%">3,000 m</span>
+      <i class="dg-cursor" id="dg-cursor"></i>
+    </div>
+    <output class="dg-value" id="dg-value">0 m</output>
+  </aside>
+
+  <canvas id="snow" class="snow" aria-hidden="true"></canvas>
+
+  <main class="ocean">
+
+    <!-- HERO: the surface -->
+    <section class="hero" id="surface">
+      <div class="rays" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="hero-inner">
+        <p class="eyebrow">Twelve species · three depths · twenty-five watching spots</p>
+        <h1 class="hero-title">
+          <span class="line">Whale</span>
+          <span class="line line-2">Guide</span>
+        </h1>
+        <div class="hero-foot">
+          <p>Dive from the surface to 3,000 metres. Meet the whales that hunt at each depth, then find the place and the month to see them with your own eyes.</p>
+          <div class="hero-buttons">
+            <a class="btn btn-solid" href="#species">Start the dive</a>
+            <button class="btn btn-outline" type="button" data-ask="I want to see a humpback whale. When should I go?">Plan a trip</button>
+          </div>
+        </div>
+      </div>
+      <!-- The whale that swims in front of the title -->
+      <img class="hero-whale" id="hero-whale" alt="" aria-hidden="true">
+    </section>
+
+    <!-- Species: the filter bar only sticks inside this wrapper -->
+    <div class="species-wrap">
+      <div class="filters" id="species" role="region" aria-label="Filter species">
+        <div class="filters-inner">
+          <div class="filter-group" role="group" aria-label="Feeding type">
+            <button type="button" class="chip" data-filter="teeth" data-value="" aria-pressed="true">All</button>
+            <button type="button" class="chip" data-filter="teeth" data-value="baleen" aria-pressed="false">Baleen</button>
+            <button type="button" class="chip" data-filter="teeth" data-value="toothed" aria-pressed="false">Toothed</button>
+          </div>
+          <label class="filter-select">
+            <span>Status</span>
+            <select id="filter-status">
+              <option value="">All</option>
+              <option value="EN">Endangered</option>
+              <option value="VU">Vulnerable</option>
+              <option value="LC">Least concern</option>
+              <option value="DD">Data deficient</option>
+            </select>
+          </label>
+          <label class="filter-select">
+            <span>Month</span>
+            <select id="filter-month">
+              <option value="">Any month</option>
+            </select>
+          </label>
+          <output class="filter-count" id="filter-count">12 species</output>
+        </div>
+      </div>
+
+      <!-- Size line-up: filled in by js/page.js -->
+      <section class="lineup" id="lineup" aria-labelledby="lineup-h">
+        <div class="inner">
+          <p class="lineup-kicker">To scale</p>
+          <h2 class="lineup-title" id="lineup-h">Side by <em>side</em></h2>
+          <p class="lineup-text">All twelve whales at their largest, next to a city bus and you. Scroll along the line, or pick one to jump to its card.</p>
+        </div>
+        <div class="lineup-track" id="lineup-track" tabindex="0" aria-label="Whales compared by length"></div>
+      </section>
+
+      <!-- Depth zones: filled in by js/page.js -->
+      <div id="zones"></div>
+    </div>
+
+    <!-- Map -->
+    <section class="map-section" id="map" aria-labelledby="map-title">
+      <div class="inner">
+        <header class="zone-head map-head">
+          <div class="zone-depth" aria-hidden="true"><span id="spot-count">25</span><small> spots</small></div>
+          <div>
+            <p class="eyebrow">Back to the surface</p>
+            <h2 id="map-title" class="zone-name">Where <em>and when?</em></h2>
+            <p class="zone-text">Pick a whale to see the best places to watch it. Pick a month to see which spots are in season.</p>
+          </div>
+        </header>
+        <div class="map-species" id="map-species" role="group" aria-label="Pick a whale"></div>
+        <div class="map-layout">
+          <div class="map-wrap">
+            <div id="world" class="world" role="application" aria-label="Map of whale ranges and watching spots"></div>
+            <div class="map-legend" id="map-legend" aria-live="polite"></div>
+            <div class="month-strip" id="month-strip" role="group" aria-label="Pick a month"></div>
+          </div>
+          <aside class="region-list" aria-live="polite">
+            <h3 id="region-title">All spots</h3>
+            <ul id="region-ul"></ul>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- Conservation -->
+    <section class="conservation-section" id="conservation" aria-labelledby="conservation-title">
+      <div class="inner">
+        <header class="section-head">
+          <p class="eyebrow">IUCN Red List</p>
+          <h2 id="conservation-title" class="section-title">Ocean giants, <em>still fragile</em></h2>
+        </header>
+        <div class="conservation-layout">
+          <div class="status-bars" id="status-bars"></div>
+          <ol class="threats">
+            <li><strong>Ship strikes</strong><span>Busy shipping lanes cross feeding grounds. Speed limits clearly reduce deaths.</span></li>
+            <li><strong>Entanglement</strong><span>Lost and active fishing gear injures thousands of whales every year.</span></li>
+            <li><strong>Underwater noise</strong><span>Whales hunt and talk with sound. Ship and sonar noise drowns out their world.</span></li>
+            <li><strong>A warming ocean</strong><span>Krill swarms are moving, and whales follow their food into new and riskier routes.</span></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <div class="inner footer-inner">
+        <p>Whale Guide · a draft built for the Open Agentic Web Challenge. Content will be fact-checked before launch.</p>
+        <p>Satellite imagery © Esri, Maxar, Earthstar Geographics. Coastlines from Natural Earth. Ranges are approximate, based on IUCN descriptions. Whale illustrations generated with AI for this site.</p>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Chat panel -->
+  <aside class="chat" id="chat" aria-label="Chat with the Guide" data-open="false">
+    <header class="chat-head">
+      <div>
+        <p class="chat-eyebrow">Agent network · runs in your browser</p>
+        <h2 class="chat-title">Guide</h2>
+      </div>
+      <div class="chat-tools">
+        <button type="button" class="icon-btn" id="settings-open" aria-label="Model settings" title="Model settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm8 3.5-.1-1.2 2-1.6-2-3.4-2.4.9a8 8 0 0 0-2-1.2L15 3h-4l-.5 2.5a8 8 0 0 0-2 1.2l-2.4-.9-2 3.4 2 1.6a8 8 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-.9a8 8 0 0 0 2 1.2L11 21h4l.5-2.5a8 8 0 0 0 2-1.2l2.4.9 2-3.4-2-1.6.1-1.2Z"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="chat-close" aria-label="Close chat" title="Close">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Which agent is working -->
+    <div class="agent-net" id="agent-net"></div>
+    <ol class="agents sr-only" id="agents" aria-label="Agents">
+      <li data-agent="guide" class="active"><i></i>Guide</li>
+      <li data-agent="species-expert"><i></i>Species Expert</li>
+      <li data-agent="trip-planner"><i></i>Trip Planner</li>
+      <li data-agent="conservation-expert"><i></i>Conservation Expert</li>
+      <li data-agent="sea-advisor" class="external" title="Loaded from another site, with your permission"><i></i>Sea Advisor <small>other site</small></li>
+    </ol>
+
+    <div class="messages" id="messages" aria-live="polite"></div>
+
+    <div class="suggestions" id="suggestions">
+      <button type="button" data-ask="Show me the blue whale">Show me the blue whale</button>
+      <button type="button" data-ask="I want to see a humpback whale. When should I go?">When to see humpbacks?</button>
+      <button type="button" data-ask="Which species are most threatened?">Most threatened species</button>
+    </div>
+
+    <form class="composer" id="composer">
+      <label class="sr-only" for="composer-input">Your message</label>
+      <input id="composer-input" type="text" autocomplete="off" placeholder="Ask about a whale or a trip…">
+      <button type="submit" aria-label="Send">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </form>
+    <p class="chat-note">Draft: answers come from scripted demos for now. The model gets connected in week 2.</p>
+  </aside>
+
+  <!-- Consent before loading another site's agent -->
+  <div class="modal-backdrop" id="consent" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="consent-title">
+      <p class="modal-eyebrow">Request to connect to another site</p>
+      <h2 id="consent-title">Load the Ocean Conditions agent?</h2>
+      <dl class="modal-details">
+        <div><dt>Site</dt><dd><code id="consent-origin">http://127.0.0.1:5501</code></dd></div>
+        <div><dt>Agent</dt><dd>Sea Advisor</dd></div>
+        <div><dt>Purpose</dt><dd id="consent-purpose">Check sea conditions for the chosen spot and months</dd></div>
+      </dl>
+      <div class="modal-data">
+        <div class="sent">
+          <h3>Will be shared</h3>
+          <ul id="consent-shared"><li>The question “Sea conditions in Húsavík, June to August”</li></ul>
+        </div>
+        <div class="kept">
+          <h3>Stays here</h3>
+          <ul><li>Your API key</li><li>Your chat history</li><li>Your personal notes</li></ul>
+        </div>
+      </div>
+      <p class="modal-note">The agent runs in your browser, with the model you chose. Ocean Conditions cannot change your model settings.</p>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn-outline" id="consent-deny">Deny</button>
+        <button type="button" class="btn btn-solid" id="consent-allow">Allow once</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model settings (bring your own key) -->
+  <div class="modal-backdrop" id="settings" hidden>
+    <form class="modal settings-form" id="settings-form" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <p class="modal-eyebrow">Model settings</p>
+      <h2 id="settings-title">Which model should the Guide use?</h2>
+      <fieldset class="settings-options">
+        <legend class="sr-only">Model source</legend>
+        <label><input type="radio" name="source" value="site" checked> <span><strong>The site's default model</strong><small>Free, with a daily limit</small></span></label>
+        <label><input type="radio" name="source" value="byok"> <span><strong>My own key</strong><small>Any OpenAI-compatible endpoint</small></span></label>
+      </fieldset>
+      <div class="settings-fields">
+        <label for="settings-url">Endpoint</label>
+        <input id="settings-url" type="url" placeholder="https://api.groq.com/openai/v1" disabled>
+        <label for="settings-model">Model</label>
+        <input id="settings-model" type="text" placeholder="llama-3.3-70b-versatile" disabled>
+        <label for="settings-key">API key</label>
+        <input id="settings-key" type="password" placeholder="sk-…" autocomplete="off" disabled>
+      </div>
+      <p class="modal-note">Your key stays in this browser. It is never put in the address bar, in agent instructions or sent to other sites.</p>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn-outline" id="settings-cancel">Cancel</button>
+        <button type="submit" class="btn btn-solid">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- A whale that swims across the screen when an agent goes to a species -->
+  <img class="swimmer" id="swimmer" alt="" aria-hidden="true">
+
+  <script src="vendor/gsap.min.js"></script>
+  <script src="vendor/ScrollTrigger.min.js"></script>
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/page.js"></script>
+  <script src="js/ranges.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/actions.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/swim.js"></script>
+  <script src="js/agentnet.js"></script>
+  <script src="js/chat.js"></script>
+</body>
+</html>
