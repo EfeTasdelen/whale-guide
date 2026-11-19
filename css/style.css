@@ -812,3 +812,4 @@ body.chat-open .hero-whale, body.chat-open canvas.hero-whale { width: min(66vw, 
   .lu-ref figcaption b { font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .lu-whale { animation: none; } .lu-ruler::before { transition: none; } }
+.card-links { display: inline-flex; gap: 16px; }

@@ -44,7 +44,10 @@
         <p class="card-sources">Sources: ${(s.sources || []).map((x) => `<a href="${x.url}" target="_blank" rel="noopener">${x.name.split(',')[0].replace(' species page', '')}</a>`).join(', ')}${s.sound ? `. Sound: <a href="${s.sound.source}" target="_blank" rel="noopener">${s.sound.credit}</a>` : ''}</p>
         <div class="card-foot">
           <span class="places">${places}${s.sightings.length > 2 ? ` and ${s.sightings.length - 2} more` : ''}</span>
-          <button type="button" class="link-btn" data-map="${s.id}">Show on map</button>
+          <span class="card-links">
+            <button type="button" class="link-btn" data-compare="${s.id}">Compare size</button>
+            <button type="button" class="link-btn" data-map="${s.id}">Show on map</button>
+          </span>
         </div>
       </article>`;
   }
@@ -130,6 +133,16 @@
       if (!b) return;
       const card = document.getElementById('species-' + b.dataset.go);
       if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.focus({ preventScroll: true }); }
+    });
+
+    // "Compare size" on a card: go up to the line-up with that whale picked
+    document.getElementById('zones').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-compare]');
+      if (!b) return;
+      pick(b.dataset.compare);
+      document.getElementById('lineup').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const tab = document.getElementById('lu-tab-' + b.dataset.compare);
+      if (tab) tab.focus({ preventScroll: true });
     });
 
     pick(sorted[0].id);
